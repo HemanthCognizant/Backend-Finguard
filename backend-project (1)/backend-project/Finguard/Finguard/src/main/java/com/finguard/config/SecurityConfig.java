@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/banker/**").hasRole("BANKER")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/user/**").authenticated()
+                        .requestMatchers("/api/onboarding/**").permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
