@@ -57,4 +57,23 @@ public class CustomerOnboarding {
 
     private LocalDateTime createdAt;
 
+    @PrePersist
+    protected void onCreate() {
+        // 1. Ensure the date is set so the "Date" column in the list isn't empty
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+
+        // 2. This is the fix for your "Server Error"
+        // It creates a unique ID like KYC-12345 to avoid the DB conflict
+        if (this.applicationId == null || this.applicationId.isEmpty()) {
+            this.applicationId = "KYC-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+
+        // 3. Set default status
+        if (this.status == null) {
+            this.status = "Pending";
+        }
+    }
+
 }
