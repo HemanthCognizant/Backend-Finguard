@@ -10,27 +10,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-
 @Table(name = "customer_onboarding")
-
 @Getter
-
 @Setter
-
 @NoArgsConstructor
-
 @AllArgsConstructor
 
 public class CustomerOnboarding {
 
     @Id
-
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    private Long id;
-
     @Column(unique = true)
-
     private String applicationId;
 
     private String fullName;
@@ -65,9 +54,9 @@ public class CustomerOnboarding {
         }
 
         // 2. This is the fix for your "Server Error"
-        // It creates a unique ID like KYC-12345 to avoid the DB conflict
+        // It creates a unique ID like FIN-12345 to avoid the DB conflict
         if (this.applicationId == null || this.applicationId.isEmpty()) {
-            this.applicationId = "KYC-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            this.applicationId = "FIN-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
 
         // 3. Set default status
