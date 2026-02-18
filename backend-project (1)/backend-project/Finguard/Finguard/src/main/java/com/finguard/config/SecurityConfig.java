@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/user/**").authenticated()
                         .requestMatchers("/api/onboarding/**").permitAll()
+                        .requestMatchers("/api/transactions/**").permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,

@@ -18,4 +18,6 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @Column(nullable = false)
+    private Double balance=(250000.0);
 }

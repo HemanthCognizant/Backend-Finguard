@@ -36,7 +36,7 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest req) {
         User user = service.authenticate(req.getEmail(), req.getPassword());
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(),user.getId());
         return new LoginResponse(token);
 
     }
