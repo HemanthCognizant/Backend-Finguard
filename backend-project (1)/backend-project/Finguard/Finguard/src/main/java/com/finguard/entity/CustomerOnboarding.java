@@ -32,6 +32,7 @@ public class CustomerOnboarding {
 
     private String mobile;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String aadhaarFront;
@@ -45,6 +46,9 @@ public class CustomerOnboarding {
     private String status;
 
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private Double balance=(250000.0);
 
     @PrePersist
     protected void onCreate() {

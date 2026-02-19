@@ -12,7 +12,6 @@ public class UserService {
     }
     public User register(User user) {
         user.setPassword(encoder.encode(user.getPassword()));
-        user.setBalance(250000.0);
         return repo.save(user);
     }
     public User authenticate(String email, String password) {

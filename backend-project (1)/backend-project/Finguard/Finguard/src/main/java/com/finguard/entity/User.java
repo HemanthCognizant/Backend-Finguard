@@ -18,6 +18,10 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
-    @Column(nullable = false)
-    private Double balance=(250000.0);
+
+    // In com.finguard.entity.User
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false)
+    private CustomerOnboarding onboardingData;
+
 }
