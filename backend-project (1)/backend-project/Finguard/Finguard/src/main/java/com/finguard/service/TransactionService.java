@@ -1,19 +1,19 @@
 package com.finguard.service;
-
 import com.finguard.entity.Transaction;
 import com.finguard.entity.User;
 import com.finguard.repository.TransactionRepository;
 import com.finguard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final PasswordEncoder passwordEncoder;
     public Transaction sendTransaction(Long senderId,
                                        Long recipientId,
                                        Double amount,
@@ -23,6 +23,9 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
         User recipient = userRepository.findById(recipientId)
                 .orElseThrow(() -> new RuntimeException("Recipient not found"));
+        if(!passwordEncoder.matches(password,sender.getPassword())){
+            throw new RuntimeException("Invalid banking password retry!!!!!!!!!!!!!");
+        }
         if (senderId.equals(recipientId)) {
             throw new RuntimeException("Cannot send to yourself");
         }
@@ -32,7 +35,6 @@ public class TransactionService {
         if (sender.getBalance() < amount) {
             throw new RuntimeException("Insufficient balance");
         }
-        // ✅ Risk Logic
         String risk;
         if (amount > 100000) {
             risk = "HIGH";
@@ -49,7 +51,6 @@ public class TransactionService {
         tx.setChannel(channel);
         tx.setRiskLevel(risk);
         tx.setStatus(status);
-        // Deduct balance only if SUCCESS
         if (status.equals("SUCCESS")) {
             sender.setBalance(sender.getBalance() - amount);
             recipient.setBalance(recipient.getBalance() + amount);
@@ -65,5 +66,26 @@ public class TransactionService {
         return userRepository.findById(userId)
                 .orElseThrow()
                 .getBalance();
+    }
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
+
+    @Transactional
+    public void updateStatus(Long id, String status) {
+        Transaction tx = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        tx.setStatus(status.toUpperCase());
+
+        if (status.equalsIgnoreCase("COMPLETED")) {
+            User sender = tx.getSender();
+            User recipient = tx.getRecipient();
+            sender.setBalance(sender.getBalance() - tx.getAmount());
+            recipient.setBalance(recipient.getBalance() + tx.getAmount());
+            userRepository.save(sender);
+            userRepository.save(recipient);
+        }
+        transactionRepository.save(tx);
     }
 }
