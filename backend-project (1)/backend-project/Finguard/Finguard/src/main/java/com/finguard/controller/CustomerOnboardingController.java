@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/onboarding")
@@ -37,14 +39,31 @@ public class CustomerOnboardingController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    @PostMapping("/upload-multiple")
+    public ResponseEntity<Map<String, String>> uploadFiles(
+            @RequestParam("aadhaarFront") MultipartFile aadhaarFront,
+            @RequestParam("aadhaarBack") MultipartFile aadhaarBack,
+            @RequestParam("panCard") MultipartFile panCard,
+            @RequestParam("photo") MultipartFile photo) throws Exception {
+
         String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
         File dir = new File(uploadDir);
         if (!dir.exists()) dir.mkdirs();
 
-        String filePath = uploadDir + file.getOriginalFilename();
-        file.transferTo(new File(filePath));
-        return file.getOriginalFilename(); // Return just the name for DB storage
+        Map<String, String> fileNames = new HashMap<>();
+
+        // Helper to save files
+        fileNames.put("aadhaarFront", saveFile(aadhaarFront, uploadDir));
+        fileNames.put("aadhaarBack", saveFile(aadhaarBack, uploadDir));
+        fileNames.put("panCard", saveFile(panCard, uploadDir));
+        fileNames.put("photo", saveFile(photo, uploadDir));
+
+        return ResponseEntity.ok(fileNames);
+    }
+
+    private String saveFile(MultipartFile file, String dir) throws Exception {
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        file.transferTo(new File(dir + fileName));
+        return fileName;
     }
 }
