@@ -35,7 +35,7 @@ public class CustomerOnboardingService {
 
     public CustomerOnboarding updateStatus(String applicationId, String status) {
         CustomerOnboarding customer = repository.findById(applicationId)
-                .orElseThrow(()->new RuntimeException("Application not found: " + applicationId));
+                .orElseThrow(() -> new RuntimeException("Application not found: " + applicationId));
         customer.setStatus(status);
         return repository.save(customer);
     }
@@ -43,11 +43,15 @@ public class CustomerOnboardingService {
     public CustomerOnboarding findByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Fix: Add .orElse(null) to resolve the Optional type mismatch
         CustomerOnboarding profile = repository.findByEmail(user.getEmail()).orElse(null);
+
         if (profile == null) {
             CustomerOnboarding fallback = new CustomerOnboarding();
             fallback.setFullName(user.getName());
             fallback.setApplicationId("PENDING");
+            fallback.setStatus("NOT_STARTED");
             return fallback;
         }
         return profile;

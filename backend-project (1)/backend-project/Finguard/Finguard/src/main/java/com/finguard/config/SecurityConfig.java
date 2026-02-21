@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/**").authenticated()
                         .requestMatchers("/api/onboarding/**").permitAll()
                         .requestMatchers("/api/transactions/**").permitAll()
+                        .requestMatchers("/api/alerts/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().denyAll()
                 )

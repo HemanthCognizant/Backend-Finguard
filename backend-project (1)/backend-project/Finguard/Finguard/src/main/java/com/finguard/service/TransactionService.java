@@ -1,8 +1,7 @@
 package com.finguard.service;
 
-import com.finguard.entity.CustomerOnboarding;
-import com.finguard.entity.Transaction;
-import com.finguard.entity.User;
+import com.finguard.entity.*;
+import com.finguard.repository.AlertRepository;
 import com.finguard.repository.CustomerOnboardingRepository;
 import com.finguard.repository.TransactionRepository;
 import com.finguard.repository.UserRepository;
@@ -10,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.finguard.entity.Role;
 
 import java.util.List;
 
@@ -22,6 +20,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CustomerOnboardingRepository onboardingRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AlertRepository alertRepo;
 
 @Transactional
 public Transaction sendTransaction(Long senderId,
@@ -71,6 +70,14 @@ public Transaction sendTransaction(Long senderId,
 
     // 7. Risk Analysis
     String risk = (amount > 100000) ? "HIGH" : (amount > 50000) ? "MEDIUM" : "LOW";
+
+    if ("HIGH".equals(risk)) {
+        Alert alert = new Alert();
+        alert.setType("Unusual Transaction Pattern");
+        alert.setCustomer(sender.getName());
+        alert.setSeverity("HIGH");
+        alertRepo.save(alert);
+    }
 
     // 8. Status Logic: HIGH risk requires Banker approval (PENDING)
     String status = risk.equals("HIGH") ? "PENDING" : "SUCCESS";

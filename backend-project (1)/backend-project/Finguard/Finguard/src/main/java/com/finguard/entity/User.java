@@ -24,4 +24,7 @@ public class User {
     @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false)
     private CustomerOnboarding onboardingData;
 
+    @Column(name = "failed_attempts", columnDefinition = "int default 0")
+    private int failedAttempts = 0;
+
 }
