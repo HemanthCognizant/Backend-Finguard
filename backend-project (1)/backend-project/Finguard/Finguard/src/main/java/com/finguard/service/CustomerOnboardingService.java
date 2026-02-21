@@ -1,7 +1,9 @@
 package com.finguard.service;
 
 import com.finguard.entity.CustomerOnboarding;
+import com.finguard.entity.User;
 import com.finguard.repository.CustomerOnboardingRepository;
+import com.finguard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class CustomerOnboardingService {
+
+    private final UserRepository userRepository;
 
     private final CustomerOnboardingRepository repository;
 
@@ -34,6 +38,19 @@ public class CustomerOnboardingService {
                 .orElseThrow(()->new RuntimeException("Application not found: " + applicationId));
         customer.setStatus(status);
         return repository.save(customer);
+    }
+
+    public CustomerOnboarding findByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        CustomerOnboarding profile = repository.findByEmail(user.getEmail()).orElse(null);
+        if (profile == null) {
+            CustomerOnboarding fallback = new CustomerOnboarding();
+            fallback.setFullName(user.getName());
+            fallback.setApplicationId("PENDING");
+            return fallback;
+        }
+        return profile;
     }
 
 }

@@ -1,6 +1,8 @@
 package com.finguard.controller;
 import com.finguard.dto.TransactionRequest;
+import com.finguard.entity.CustomerOnboarding;
 import com.finguard.entity.Transaction;
+import com.finguard.service.CustomerOnboardingService;
 import com.finguard.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.List;
 @CrossOrigin
 public class TransactionController {
     private final TransactionService transactionService;
+    private final CustomerOnboardingService service;
     @PostMapping
     public ResponseEntity<?> send(@RequestBody TransactionRequest request) {
         Transaction tx = transactionService.sendTransaction(

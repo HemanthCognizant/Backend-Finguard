@@ -39,6 +39,12 @@ public class CustomerOnboardingController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<CustomerOnboarding> getProfile(@PathVariable Long userId) {
+        // Logic to find onboarding details linked to this User ID
+        return ResponseEntity.ok(service.findByUserId(userId));
+    }
+
     @PostMapping("/upload-multiple")
     public ResponseEntity<Map<String, String>> uploadFiles(
             @RequestParam("aadhaarFront") MultipartFile aadhaarFront,
