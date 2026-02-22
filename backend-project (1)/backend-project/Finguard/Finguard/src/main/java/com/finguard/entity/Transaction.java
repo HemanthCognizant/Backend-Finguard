@@ -26,9 +26,9 @@ public class Transaction {
 
     private String channel; // UPI / ONLINE_BANKING
 
-    private String riskLevel; // LOW / MEDIUM / HIGH
+    private String riskLevel;
 
-    private String status; // SUCCESS / PENDING
+    private String status;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

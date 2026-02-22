@@ -7,5 +7,5 @@ public class TransactionRequest {
     private Long recipientId;
     private Double amount;
     private String channel;
-    private String password; // mock
+    private String password;
 }

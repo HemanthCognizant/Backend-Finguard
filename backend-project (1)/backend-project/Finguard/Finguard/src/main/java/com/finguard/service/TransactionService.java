@@ -122,7 +122,7 @@ public Transaction sendTransaction(Long senderId,
     }
 
     @Transactional
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(String id, String status) {
         Transaction tx = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
