@@ -2,6 +2,7 @@ package com.finguard.controller;
 
 import com.finguard.entity.CustomerOnboarding;
 import com.finguard.service.CustomerOnboardingService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -63,8 +64,8 @@ public class CustomerOnboardingController {
     // --- EXISTING ONBOARDING ENDPOINTS ---
 
     @PostMapping
-    public ResponseEntity<CustomerOnboarding> create(@RequestBody CustomerOnboarding customer) {
-        CustomerOnboarding saved = service.create(customer);
+    public ResponseEntity<CustomerOnboarding> create(@RequestBody CustomerOnboarding customer, HttpServletRequest request) {
+        CustomerOnboarding saved = service.create(customer, request);
         return ResponseEntity.ok(saved);
     }
 

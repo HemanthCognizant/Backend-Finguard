@@ -1,10 +1,8 @@
 package com.finguard.service;
 
 import com.finguard.entity.*;
-import com.finguard.repository.AlertRepository;
-import com.finguard.repository.CustomerOnboardingRepository;
-import com.finguard.repository.TransactionRepository;
-import com.finguard.repository.UserRepository;
+import com.finguard.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,8 @@ public class TransactionService {
     private final CustomerOnboardingRepository onboardingRepository;
     private final PasswordEncoder passwordEncoder;
     private final AlertRepository alertRepo;
+    private final AuditRepository auditRepo;
+    private final HttpServletRequest request;
 
 @Transactional
 public Transaction sendTransaction(Long senderId,
@@ -139,6 +139,12 @@ public Transaction sendTransaction(Long senderId,
             onboardingRepository.save(senderKyc);
             onboardingRepository.save(recipientKyc);
             tx.setStatus("SUCCESS");
+            String ip = request.getHeader("X-Forwarded-For");
+            if (ip == null || ip.isEmpty()) {
+                ip = request.getRemoteAddr();
+            }
+            auditRepo.save(new AuditLog("Admin", "Approved Transaction", "Risk Management",
+                    "Approved High Risk TX: " + tx.getId(), ip));
         } else {
             tx.setStatus(status.toUpperCase());
         }

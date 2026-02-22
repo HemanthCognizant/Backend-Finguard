@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/transactions/**").permitAll()
                         .requestMatchers("/api/alerts/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/audit-logs/**").permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,

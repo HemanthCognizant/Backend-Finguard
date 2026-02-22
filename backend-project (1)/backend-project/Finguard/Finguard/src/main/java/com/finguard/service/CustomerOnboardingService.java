@@ -1,12 +1,15 @@
 package com.finguard.service;
 
+import com.finguard.entity.AuditLog;
 import com.finguard.entity.CustomerOnboarding;
 import com.finguard.entity.User;
 import com.finguard.entity.OtpEntity;
+import com.finguard.repository.AuditRepository;
 import com.finguard.repository.CustomerOnboardingRepository;
 import com.finguard.repository.OtpRepository;
 import com.finguard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -28,6 +31,8 @@ public class CustomerOnboardingService {
     private final CustomerOnboardingRepository repository;
     private final OtpRepository otpRepository;
     private final JavaMailSender mailSender;
+    private final AuditRepository auditRepo;
+    private final HttpServletRequest request;
 
     /**
      * Step 1: Generate OTP, Save to DB, and Send Email
@@ -80,13 +85,35 @@ public class CustomerOnboardingService {
     /**
      * Step 3: Proceed with creating the onboarding record
      */
-    public CustomerOnboarding create(CustomerOnboarding customer) {
+//    public CustomerOnboarding create(CustomerOnboarding customer) {
+//        customer.setApplicationId(
+//                "KYC" + UUID.randomUUID().toString().substring(0,5).toUpperCase()
+//        );
+//        customer.setStatus("PENDING");
+//        customer.setCreatedAt(LocalDateTime.now());
+//        CustomerOnboarding saved = repository.save(customer);
+//        String ip = request.getRemoteAddr();
+//        auditRepo.save(new AuditLog("Banker Name", "Customer Onboarding", "KYC", "Onboarded: " + saved.getFullName(), ip));
+//        return repository.save(customer);
+//    }
+
+    public CustomerOnboarding create(CustomerOnboarding customer, HttpServletRequest request) {
         customer.setApplicationId(
                 "KYC" + UUID.randomUUID().toString().substring(0,5).toUpperCase()
         );
         customer.setStatus("PENDING");
         customer.setCreatedAt(LocalDateTime.now());
-        return repository.save(customer);
+
+        CustomerOnboarding saved = repository.save(customer);
+
+        // Summary: Real IP extraction and audit log for KYC creation
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
+        }
+        auditRepo.save(new AuditLog("Banker Name", "Customer Onboarding", "KYC", "Onboarded: " + saved.getFullName(), ip));
+
+        return saved;
     }
 
     public List<CustomerOnboarding> getAll() {
@@ -97,7 +124,18 @@ public class CustomerOnboardingService {
         CustomerOnboarding customer = repository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found: " + applicationId));
         customer.setStatus(status);
-        return repository.save(customer);
+        CustomerOnboarding updated = repository.save(customer);
+
+        // Summary: Only generate log if status is APPROVED; captures real IP
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
+        }
+        if ("APPROVED".equalsIgnoreCase(status)) {
+            auditRepo.save(new AuditLog("Admin", "KYC Approved", "KYC Verification", "Approved KYC for: " + updated.getFullName(), ip));
+        }
+
+        return updated;
     }
 
     public CustomerOnboarding findByUserId(Long userId) {
