@@ -35,6 +35,7 @@ public class UserService {
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
             }
+            String userRole = user.getRole().toString();
 
             if (!encoder.matches(password, user.getPassword())) {
                 // Track failed attempts (Assumes you add 'failedAttempts' field to User entity)
@@ -47,7 +48,7 @@ public class UserService {
                     alert.setSeverity("MEDIUM");
                     alertRepo.save(alert);
 
-                    auditRepo.save(new AuditLog(user.getName(), "Suspicious Login", "Authentication", "Failed login limit reached", ip));
+                    auditRepo.save(new AuditLog(user.getName(), userRole, "Suspicious Login", "Authentication", "Failed login limit reached", ip));
                 }
                 repo.save(user);
                 throw new RuntimeException("Invalid credentials");
@@ -55,7 +56,7 @@ public class UserService {
 
             user.setFailedAttempts(0); // Reset on success
             repo.save(user);
-            auditRepo.save(new AuditLog(user.getName(), "Login", "Authentication", "Successful login", ip));
+            auditRepo.save(new AuditLog(user.getName(), userRole, "Login", "Authentication", "Successful login", ip));
             return user;
         }
 }

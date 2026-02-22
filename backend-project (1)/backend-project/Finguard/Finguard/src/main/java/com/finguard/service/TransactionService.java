@@ -143,7 +143,7 @@ public Transaction sendTransaction(Long senderId,
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
             }
-            auditRepo.save(new AuditLog("Admin", "Approved Transaction", "Risk Management",
+            auditRepo.save(new AuditLog("Admin", "ADMIN", "Approved Transaction", "Risk Management",
                     "Approved High Risk TX: " + tx.getId(), ip));
         } else {
             tx.setStatus(status.toUpperCase());

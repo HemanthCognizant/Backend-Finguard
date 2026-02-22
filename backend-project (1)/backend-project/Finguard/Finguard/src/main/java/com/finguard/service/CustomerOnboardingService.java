@@ -111,7 +111,7 @@ public class CustomerOnboardingService {
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
         }
-        auditRepo.save(new AuditLog("Banker Name", "Customer Onboarding", "KYC", "Onboarded: " + saved.getFullName(), ip));
+        auditRepo.save(new AuditLog("Banker Name", "BANKER", "Customer Onboarding", "KYC", "Onboarded: " + saved.getFullName(), ip));
 
         return saved;
     }
@@ -132,7 +132,7 @@ public class CustomerOnboardingService {
             ip = request.getRemoteAddr();
         }
         if ("APPROVED".equalsIgnoreCase(status)) {
-            auditRepo.save(new AuditLog("Admin", "KYC Approved", "KYC Verification", "Approved KYC for: " + updated.getFullName(), ip));
+            auditRepo.save(new AuditLog("Admin", "ADMIN", "KYC Approved", "KYC Verification", "Approved KYC for: " + updated.getFullName(), ip));
         }
 
         return updated;

@@ -17,6 +17,7 @@ public class AuditLog {
 
     private LocalDateTime timestamp;
     private String user;
+    private String role;
     private String action;
     private String module;
     private String details;
@@ -26,8 +27,9 @@ public class AuditLog {
      * Summary: Constructor for manual creation in Services.
      * Sets the timestamp automatically at the moment of creation.
      */
-    public AuditLog(String user, String action, String module, String details, String ipAddress) {
+    public AuditLog(String user, String role, String action, String module, String details, String ipAddress) {
         this.user = user;
+        this.role= role;
         this.action = action;
         this.module = module;
         this.details = details;
