@@ -18,10 +18,11 @@ public class JwtUtil {
     private static final String SECRET = "finguard-secret-key-finguard-secret-key";
     private static final long EXPIRATION = 1000 * 60 * 60;
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
-    public String generateToken(String email, String role, Long userId) {
+    public String generateToken(String email,String name, String role, Long userId) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
+                .claim("name", name)
                 .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
