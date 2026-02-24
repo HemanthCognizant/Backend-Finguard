@@ -4,7 +4,7 @@ import lombok.Data;
 @Data
 public class TransactionRequest {
     private Long senderId;
-    private Long recipientId;
+    private String recipientId;
     private Double amount;
     private String channel;
     private String password;

@@ -29,6 +29,7 @@ public class Transaction {
     private String riskLevel;
 
     private String status;
+    private String recipientAppId;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
