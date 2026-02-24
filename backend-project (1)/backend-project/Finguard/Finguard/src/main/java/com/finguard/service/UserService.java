@@ -30,7 +30,6 @@ public class UserService {
         public User authenticate(String email, String password) {
             User user = repo.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-//            String ip = request.getRemoteAddr();
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
@@ -38,7 +37,6 @@ public class UserService {
             String userRole = user.getRole().toString();
 
             if (!encoder.matches(password, user.getPassword())) {
-                // Track failed attempts (Assumes you add 'failedAttempts' field to User entity)
                 user.setFailedAttempts(user.getFailedAttempts() + 1);
 
                 if (user.getFailedAttempts() >= 3) {
@@ -54,7 +52,7 @@ public class UserService {
                 throw new RuntimeException("Invalid credentials");
             }
 
-            user.setFailedAttempts(0); // Reset on success
+            user.setFailedAttempts(0);
             repo.save(user);
             auditRepo.save(new AuditLog(user.getName(), userRole, "Login", "Authentication", "Successful login", ip));
             return user;

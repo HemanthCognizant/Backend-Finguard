@@ -1,5 +1,6 @@
 package com.finguard.service;
 
+import com.finguard.dto.TransactionSummary;
 import com.finguard.entity.*;
 import com.finguard.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,87 +23,87 @@ public class TransactionService {
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
 
-@Transactional
-public Transaction sendTransaction(Long senderId,
-                                   Long recipientId,
-                                   Double amount,
-                                   String channel,
-                                   String password) {
+    @Transactional
+    public Transaction sendTransaction(Long senderId,
+                                       String recipientAppId, // Updated to String for Application ID
+                                       Double amount,
+                                       String channel,
+                                       String password) {
 
-    // 1. Fetch User entities and verify they exist
-    User sender = userRepository.findById(senderId)
-            .orElseThrow(() -> new RuntimeException("Sender not found"));
-    User recipient = userRepository.findById(recipientId)
-            .orElseThrow(() -> new RuntimeException("Recipient not found"));
+        // 1. Fetch Sender User and their KYC details
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new RuntimeException("Sender not found"));
 
-    // 2. Role Validation: Ensure both are CUSTOMERS
-    if (sender.getRole() != Role.CUSTOMER) {
-        throw new RuntimeException("Only customers can initiate transactions");
+        CustomerOnboarding senderKyc = onboardingRepository.findByEmail(sender.getEmail())
+                .orElseThrow(() -> new RuntimeException("Sender KYC record not found"));
+
+        // 2. Fetch Recipient by Application ID (from customer_onboarding table)
+        CustomerOnboarding recipientKyc = onboardingRepository.findById(recipientAppId)
+                .orElseThrow(() -> new RuntimeException("Recipient Application ID not found: " + recipientAppId));
+
+        // 3. Bridge Recipient KYC to User Table via Email to maintain Transaction Relationship
+        User recipient = userRepository.findByEmail(recipientKyc.getEmail())
+                .orElseThrow(() -> new RuntimeException("Recipient user account is not active or registered"));
+
+        // 4. Role Validation
+        if (sender.getRole() != Role.CUSTOMER) {
+            throw new RuntimeException("Only customers can initiate transactions");
+        }
+
+        // 5. Security Check: Verify banking password
+        if (!passwordEncoder.matches(password, sender.getPassword())) {
+            throw new RuntimeException("Invalid banking password. Please try again.");
+        }
+
+        // 6. Logical Validations
+        if (senderId.equals(recipient.getId())) {
+            throw new RuntimeException("Cannot send money to your own account");
+        }
+        if (amount <= 0) {
+            throw new RuntimeException("Transaction amount must be greater than zero");
+        }
+
+        // 7. Balance Check (using the Onboarding table balance)
+        if (senderKyc.getBalance() < amount) {
+            throw new RuntimeException("Insufficient balance in your account");
+        }
+
+        // 8. Risk Analysis
+        String risk = (amount > 100000) ? "HIGH" : (amount > 50000) ? "MEDIUM" : "LOW";
+
+        if ("HIGH".equals(risk)) {
+            Alert alert = new Alert();
+            alert.setType("Unusual Transaction Pattern");
+            alert.setCustomer(sender.getName());
+            alert.setSeverity("HIGH");
+            alertRepo.save(alert);
+        }
+
+        // 9. Status Logic: HIGH risk requires Banker approval (PENDING)
+        String status = risk.equals("HIGH") ? "PENDING" : "SUCCESS";
+
+        // 10. Create Transaction Record
+        Transaction tx = new Transaction();
+        tx.setSender(sender);
+        tx.setRecipient(recipient);
+        tx.setRecipientAppId(recipientAppId);
+        tx.setAmount(amount);
+        tx.setChannel(channel);
+        tx.setRiskLevel(risk);
+        tx.setStatus(status);
+
+        // 11. Atomic Balance Update: Only if the status is SUCCESS
+        if (status.equals("SUCCESS")) {
+            senderKyc.setBalance(senderKyc.getBalance() - amount);
+            recipientKyc.setBalance(recipientKyc.getBalance() + amount);
+
+            // Save the updated balances to the customer_onboarding table
+            onboardingRepository.save(senderKyc);
+            onboardingRepository.save(recipientKyc);
+        }
+
+        return transactionRepository.save(tx);
     }
-    // Note: If you allow sending to non-customers, remove the next check
-    if (recipient.getRole() != Role.CUSTOMER) {
-        throw new RuntimeException("Recipient must be a valid bank customer");
-    }
-
-    // 3. Security Check: Verify banking password
-    if (!passwordEncoder.matches(password, sender.getPassword())) {
-        throw new RuntimeException("Invalid banking password. Please try again.");
-    }
-
-    // 4. Validation: Logical checks
-    if (senderId.equals(recipientId)) {
-        throw new RuntimeException("Cannot send money to your own account");
-    }
-    if (amount <= 0) {
-        throw new RuntimeException("Transaction amount must be greater than zero");
-    }
-
-    // 5. Map to Onboarding Table: Fetch records using Email as the bridge
-    CustomerOnboarding senderKyc = onboardingRepository.findByEmail(sender.getEmail())
-            .orElseThrow(() -> new RuntimeException("Sender account is not fully onboarded/KYC verified"));
-    CustomerOnboarding recipientKyc = onboardingRepository.findByEmail(recipient.getEmail())
-            .orElseThrow(() -> new RuntimeException("Recipient account is not fully onboarded/active"));
-
-    // 6. Balance Check (using the Onboarding table balance)
-    if (senderKyc.getBalance() < amount) {
-        throw new RuntimeException("Insufficient balance in your onboarded account");
-    }
-
-    // 7. Risk Analysis
-    String risk = (amount > 100000) ? "HIGH" : (amount > 50000) ? "MEDIUM" : "LOW";
-
-    if ("HIGH".equals(risk)) {
-        Alert alert = new Alert();
-        alert.setType("Unusual Transaction Pattern");
-        alert.setCustomer(sender.getName());
-        alert.setSeverity("HIGH");
-        alertRepo.save(alert);
-    }
-
-    // 8. Status Logic: HIGH risk requires Banker approval (PENDING)
-    String status = risk.equals("HIGH") ? "PENDING" : "SUCCESS";
-
-    // 9. Create Transaction Record
-    Transaction tx = new Transaction();
-    tx.setSender(sender);
-    tx.setRecipient(recipient);
-    tx.setAmount(amount);
-    tx.setChannel(channel);
-    tx.setRiskLevel(risk);
-    tx.setStatus(status);
-
-    // 10. Atomic Balance Update: Only if the status is SUCCESS
-    if (status.equals("SUCCESS")) {
-        senderKyc.setBalance(senderKyc.getBalance() - amount);
-        recipientKyc.setBalance(recipientKyc.getBalance() + amount);
-
-        // Save the updated balances to the customer_onboarding table
-        onboardingRepository.save(senderKyc);
-        onboardingRepository.save(recipientKyc);
-    }
-
-    return transactionRepository.save(tx);
-}
 
     public List<Transaction> getHistory(Long userId) {
         return transactionRepository.findBySenderId(userId);
@@ -122,7 +123,7 @@ public Transaction sendTransaction(Long senderId,
     }
 
     @Transactional
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(String id, String status) {
         Transaction tx = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
@@ -139,6 +140,7 @@ public Transaction sendTransaction(Long senderId,
             onboardingRepository.save(senderKyc);
             onboardingRepository.save(recipientKyc);
             tx.setStatus("SUCCESS");
+
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
@@ -150,5 +152,28 @@ public Transaction sendTransaction(Long senderId,
         }
 
         transactionRepository.save(tx);
+    }
+
+    public TransactionSummary getTransactionSummary() {
+        // 1. Fetch all records from the database
+        List<Transaction> all = transactionRepository.findAll();
+
+        // 2. Calculate the total count of transactions
+        long totalToday = all.size();
+
+        // 3. Filter for PENDING transactions
+        long pending = all.stream()
+                .filter(t -> "PENDING".equalsIgnoreCase(t.getStatus()))
+                .count();
+
+        long blocked = all.stream()
+                .filter(t -> "BLOCKED".equalsIgnoreCase(t.getStatus()))
+                .count();
+
+        double sum = all.stream()
+                .mapToDouble(t -> t.getAmount() != null ? t.getAmount() : 0.0)
+                .sum();
+
+        return new TransactionSummary(totalToday, pending, blocked, sum);
     }
 }

@@ -34,11 +34,6 @@ public class CustomerOnboardingService {
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
 
-    /**
-     * Step 1: Generate OTP, Save to DB, and Send Email
-     * Renamed to sendOtp to match common Controller naming
-     */
-    @Transactional
     public void sendOtp(String email) {
         try {
             // 1. Clear any previous OTPs for this email to avoid duplicates
