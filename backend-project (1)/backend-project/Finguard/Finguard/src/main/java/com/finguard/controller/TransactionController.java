@@ -1,5 +1,6 @@
 package com.finguard.controller;
 import com.finguard.dto.TransactionRequest;
+import com.finguard.dto.TransactionSummary;
 import com.finguard.entity.CustomerOnboarding;
 import com.finguard.entity.Transaction;
 import com.finguard.service.CustomerOnboardingService;
@@ -19,6 +20,7 @@ public class TransactionController {
     private final CustomerOnboardingService service;
     @PostMapping
     public ResponseEntity<?> send(@RequestBody TransactionRequest request) {
+        System.out.println("Id received: "+request.getRecipientId());
         Transaction tx = transactionService.sendTransaction(
                 request.getSenderId(),
                 request.getRecipientId(),
@@ -44,8 +46,12 @@ public class TransactionController {
 
     // Update status (Approve/Reject)
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status) {
+    public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestParam String status) {
         transactionService.updateStatus(id, status);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/summary")
+    public ResponseEntity<TransactionSummary> getTransactionSummary() {
+        return ResponseEntity.ok(transactionService.getTransactionSummary());
     }
 }
