@@ -52,9 +52,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/onboarding/**").permitAll()
                         .requestMatchers("/api/transactions/**").permitAll()
                         .requestMatchers("/api/alerts/**").permitAll()
+                        .requestMatchers("/api/analytics/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/audit-logs/**").permitAll()
-                        .anyRequest().denyAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);
