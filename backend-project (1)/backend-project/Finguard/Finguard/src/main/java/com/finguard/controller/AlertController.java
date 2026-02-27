@@ -18,13 +18,11 @@ public class AlertController {
 
     private final AlertRepository alertRepo;
 
-    // Fetch all alerts for the table
     @GetMapping
     public ResponseEntity<List<Alert>> getAllAlerts() {
         return ResponseEntity.ok(alertRepo.findAll());
     }
 
-    // Fetch stats for the summary cards (Open, In-Progress, Closed)
     @GetMapping("/stats")
     public Map<String, Long> getAlertStats() {
         List<Alert> allAlerts = alertRepo.findAll();
@@ -37,7 +35,6 @@ public class AlertController {
         return stats;
     }
 
-    // Update status (e.g., when a banker clicks "Acknowledge")
     @PutMapping("/{id}/status")
     public Alert updateStatus(@PathVariable String id, @RequestParam String status) {
         Alert alert = alertRepo.findById(id)

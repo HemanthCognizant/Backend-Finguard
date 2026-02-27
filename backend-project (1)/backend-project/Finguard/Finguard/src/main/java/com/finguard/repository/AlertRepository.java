@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface AlertRepository extends JpaRepository<Alert, String> {
-    // 3. Alert Severity
+
     @Query("SELECT new com.finguard.dto.ChartDataDTO(a.severity, COUNT(a)) FROM Alert a GROUP BY a.severity")
     List<ChartDataDTO> getAlertSeverityCount();
     long countBySeverity(String severity);

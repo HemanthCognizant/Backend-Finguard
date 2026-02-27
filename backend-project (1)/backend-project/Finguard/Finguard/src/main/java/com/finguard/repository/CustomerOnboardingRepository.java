@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface CustomerOnboardingRepository extends JpaRepository<CustomerOnboarding, String> {
     Optional<CustomerOnboarding> findByEmail(String email);
 
-    // 5. Onboarding Funnel
+
     @Query("SELECT new com.finguard.dto.ChartDataDTO(c.status, COUNT(c)) FROM CustomerOnboarding c GROUP BY c.status")
     List<ChartDataDTO> getOnboardingStatus();
 }

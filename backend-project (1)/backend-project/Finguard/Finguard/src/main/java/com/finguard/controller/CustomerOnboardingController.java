@@ -5,7 +5,6 @@ import com.finguard.service.CustomerOnboardingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,46 +21,6 @@ import java.util.Map;
 public class CustomerOnboardingController {
 
     private final CustomerOnboardingService service;
-
-    // --- OTP ENDPOINTS ---
-
-    @PostMapping("/send-otp")
-    public ResponseEntity<Map<String, String>> sendOtp(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        Map<String, String> response = new HashMap<>();
-
-        try {
-            // Match this to the method name in your Service (sendOtp)
-            service.sendOtp(email);
-            response.put("message", "OTP sent successfully to " + email);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Error sending OTP: ", e);
-            response.put("error", "Failed to send OTP: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    @PostMapping("/verify-otp")
-    public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String otp = request.get("otp");
-
-        boolean isValid = service.verifyOtp(email, otp);
-
-        Map<String, Object> response = new HashMap<>();
-        if (isValid) {
-            response.put("success", true);
-            response.put("message", "OTP Verified");
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("success", false);
-            response.put("message", "Invalid or expired OTP");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
-    }
-
-    // --- EXISTING ONBOARDING ENDPOINTS ---
 
     @PostMapping
     public ResponseEntity<CustomerOnboarding> create(@RequestBody CustomerOnboarding customer, HttpServletRequest request) {

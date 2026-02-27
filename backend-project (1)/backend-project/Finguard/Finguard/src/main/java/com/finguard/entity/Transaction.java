@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 public class Transaction {
 
     @Id
-    @Column(name = "tx_id") // Renamed column
-    private String id; // Changed type to String for "TX-XXXX" format
+    @Column(name = "tx_id")
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
@@ -24,7 +24,7 @@ public class Transaction {
 
     private Double amount;
 
-    private String channel; // UPI / ONLINE_BANKING
+    private String channel;
 
     private String riskLevel;
 

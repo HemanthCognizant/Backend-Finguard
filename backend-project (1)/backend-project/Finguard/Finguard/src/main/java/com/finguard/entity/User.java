@@ -18,8 +18,6 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    // In com.finguard.entity.User
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false)
     private CustomerOnboarding onboardingData;

@@ -24,7 +24,6 @@ public class JwtUtil {
                 .claim("role", role)
                 .claim("name", name)
                 .claim("userId", userId)
-                .claim("name",name)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
