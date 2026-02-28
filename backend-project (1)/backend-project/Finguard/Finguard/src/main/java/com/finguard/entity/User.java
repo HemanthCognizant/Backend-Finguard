@@ -19,7 +19,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false)
+    @JoinColumn(name = "email",
+            referencedColumnName = "email",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private CustomerOnboarding onboardingData;
 
     @Column(name = "failed_attempts", columnDefinition = "int default 0")
