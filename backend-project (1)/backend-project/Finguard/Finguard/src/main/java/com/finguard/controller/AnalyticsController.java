@@ -1,6 +1,6 @@
 package com.finguard.controller;
 
-import com.finguard.dto.ChartDataDTO;
+import com.finguard.dto.ChartData;
 import com.finguard.repository.AlertRepository;
 import com.finguard.repository.CustomerOnboardingRepository;
 import com.finguard.repository.TransactionRepository;
@@ -23,18 +23,18 @@ public class AnalyticsController {
     private final CustomerOnboardingRepository onboardingRepo;
 
     @GetMapping("/risk-distribution")
-    public List<ChartDataDTO> getRisk() { return txRepo.getRiskDistribution(); }
+    public List<ChartData> getRisk() { return txRepo.getRiskDistribution(); }
 
     @GetMapping("/status-breakdown")
-    public List<ChartDataDTO> getStatus() { return txRepo.getStatusBreakdown(); }
+    public List<ChartData> getStatus() { return txRepo.getStatusBreakdown(); }
 
     @GetMapping("/alert-severity")
-    public List<ChartDataDTO> getAlerts() { return alertRepo.getAlertSeverityCount(); }
+    public List<ChartData> getAlerts() { return alertRepo.getAlertSeverityCount(); }
 
     @GetMapping("/channel-volume")
-    public List<ChartDataDTO> getChannels() { return txRepo.getVolumeByChannel(); }
+    public List<ChartData> getChannels() { return txRepo.getVolumeByChannel(); }
 
     @GetMapping("/onboarding-funnel")
-    public List<ChartDataDTO> getFunnel() { return onboardingRepo.getOnboardingStatus(); }
+    public List<ChartData> getFunnel() { return onboardingRepo.getOnboardingStatus(); }
 
 }

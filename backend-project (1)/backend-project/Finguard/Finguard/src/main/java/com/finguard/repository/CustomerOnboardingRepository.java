@@ -1,6 +1,6 @@
 package com.finguard.repository;
 
-import com.finguard.dto.ChartDataDTO;
+import com.finguard.dto.ChartData;
 import com.finguard.entity.CustomerOnboarding;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +12,6 @@ public interface CustomerOnboardingRepository extends JpaRepository<CustomerOnbo
     Optional<CustomerOnboarding> findByEmail(String email);
 
 
-    @Query("SELECT new com.finguard.dto.ChartDataDTO(c.status, COUNT(c)) FROM CustomerOnboarding c GROUP BY c.status")
-    List<ChartDataDTO> getOnboardingStatus();
+    @Query("SELECT new com.finguard.dto.ChartData(c.status, COUNT(c)) FROM CustomerOnboarding c GROUP BY c.status")
+    List<ChartData> getOnboardingStatus();
 }
