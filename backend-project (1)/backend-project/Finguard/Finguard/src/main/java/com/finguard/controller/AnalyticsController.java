@@ -1,5 +1,4 @@
 package com.finguard.controller;
-
 import com.finguard.dto.ChartData;
 import com.finguard.repository.AlertRepository;
 import com.finguard.repository.CustomerOnboardingRepository;
@@ -9,9 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analytics")

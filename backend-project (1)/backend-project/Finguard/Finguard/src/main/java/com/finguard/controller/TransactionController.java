@@ -1,16 +1,13 @@
 package com.finguard.controller;
 import com.finguard.dto.TransactionRequest;
 import com.finguard.dto.TransactionSummary;
-import com.finguard.entity.CustomerOnboarding;
 import com.finguard.entity.Transaction;
 import com.finguard.service.CustomerOnboardingService;
 import com.finguard.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor

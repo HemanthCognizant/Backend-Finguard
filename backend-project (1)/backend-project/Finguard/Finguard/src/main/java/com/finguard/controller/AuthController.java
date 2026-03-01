@@ -5,9 +5,7 @@ import com.finguard.entity.User;
 import com.finguard.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {

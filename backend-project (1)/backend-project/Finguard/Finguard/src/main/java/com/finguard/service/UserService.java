@@ -6,7 +6,6 @@ import com.finguard.repository.AlertRepository;
 import com.finguard.repository.AuditRepository;
 import com.finguard.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 @Service
@@ -15,7 +14,6 @@ public class UserService {
     private final AlertRepository alertRepo;
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
-
     private final PasswordEncoder encoder;
 
     public UserService(UserRepository repo, AlertRepository alertRepo, AuditRepository auditRepo, HttpServletRequest request, PasswordEncoder encoder) {
@@ -40,14 +38,12 @@ public class UserService {
 
             if (!encoder.matches(password, user.getPassword())) {
                 user.setFailedAttempts(user.getFailedAttempts() + 1);
-
                 if (user.getFailedAttempts() >= 3) {
                     Alert alert = new Alert();
                     alert.setType("Suspicious Login Activity");
                     alert.setCustomer(user.getName());
                     alert.setSeverity("MEDIUM");
                     alertRepo.save(alert);
-
                     auditRepo.save(new AuditLog(user.getName(), userRole, "Suspicious Login", "Authentication", "Failed login limit reached", ip));
                 }
                 repo.save(user);

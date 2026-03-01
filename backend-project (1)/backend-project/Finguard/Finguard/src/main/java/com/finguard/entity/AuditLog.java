@@ -1,11 +1,9 @@
 package com.finguard.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -14,7 +12,6 @@ public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private LocalDateTime timestamp;
     private String user;
     private String role;
@@ -22,8 +19,6 @@ public class AuditLog {
     private String module;
     private String details;
     private String ipAddress;
-
-
     public AuditLog(String user, String role, String action, String module, String details, String ipAddress) {
         this.user = user;
         this.role= role;

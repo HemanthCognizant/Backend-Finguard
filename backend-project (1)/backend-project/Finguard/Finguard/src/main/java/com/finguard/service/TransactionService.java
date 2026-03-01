@@ -1,5 +1,4 @@
 package com.finguard.service;
-
 import com.finguard.dto.TransactionSummary;
 import com.finguard.entity.*;
 import com.finguard.repository.*;
@@ -8,13 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
-
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final CustomerOnboardingRepository onboardingRepository;
@@ -22,18 +19,15 @@ public class TransactionService {
     private final AlertRepository alertRepo;
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
-
     @Transactional
     public Transaction sendTransaction(Long senderId,
                                        String recipientAppId,
                                        Double amount,
                                        String channel,
                                        String password) {
-
         // 1. Fetch Sender User and their KYC details
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
-
         CustomerOnboarding senderKyc = onboardingRepository.findByEmail(sender.getEmail())
                 .orElseThrow(() -> new RuntimeException("Sender KYC record not found"));
 

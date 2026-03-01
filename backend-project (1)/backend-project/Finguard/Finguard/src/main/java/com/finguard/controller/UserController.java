@@ -1,5 +1,4 @@
 package com.finguard.controller;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 @RestController
@@ -24,13 +23,6 @@ public class UserController {
         return Map.of(
                 "message", "Welcome Customer",
                 "access", "CUSTOMER dashboard data loaded"
-        );
-    }
-    @GetMapping("/user/profile")
-    public Map<String, Object> profile(Authentication auth) {
-        return Map.of(
-                "username", auth.getName(),
-                "roles", auth.getAuthorities()
         );
     }
 }
