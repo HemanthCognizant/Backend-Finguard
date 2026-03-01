@@ -10,12 +10,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/audit-logs")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200") // Summary: Allows Angular to access this API
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuditLogController {
 
     private final AuditRepository auditRepository;
-
-    // Summary: Fetches all logs from the database, sorted by newest first
     @GetMapping
     public List<AuditLog> getAllLogs() {
         return auditRepository.findAllByOrderByTimestampDesc();

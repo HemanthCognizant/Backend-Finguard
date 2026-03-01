@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -58,7 +57,7 @@ public class CustomerOnboarding {
 
 
         if (this.applicationId == null || this.applicationId.isEmpty()) {
-            this.applicationId = "FIN-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            this.applicationId = "KYC-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
 
 

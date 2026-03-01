@@ -44,7 +44,6 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getAllTransactions());
     }
 
-    // Update status (Approve/Reject)
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestParam String status) {
         transactionService.updateStatus(id, status);

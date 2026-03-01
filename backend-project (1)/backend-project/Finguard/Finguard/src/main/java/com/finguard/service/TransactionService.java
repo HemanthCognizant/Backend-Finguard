@@ -25,7 +25,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction sendTransaction(Long senderId,
-                                       String recipientAppId, // Updated to String for Application ID
+                                       String recipientAppId,
                                        Double amount,
                                        String channel,
                                        String password) {
@@ -48,6 +48,13 @@ public class TransactionService {
         // 4. Role Validation
         if (sender.getRole() != Role.CUSTOMER) {
             throw new RuntimeException("Only customers can initiate transactions");
+        }
+        if (!"APPROVED".equalsIgnoreCase(senderKyc.getStatus())) {
+            throw new RuntimeException("Transaction failed: Your KYC status is " + senderKyc.getStatus() + ". Only APPROVED customers can send money.");
+        }
+
+        if (!"APPROVED".equalsIgnoreCase(recipientKyc.getStatus())) {
+            throw new RuntimeException("Transaction failed: The recipient's KYC status is " + recipientKyc.getStatus() + ". Money can only be sent to APPROVED accounts.");
         }
 
         // 5. Security Check: Verify banking password
@@ -95,12 +102,10 @@ public class TransactionService {
         tx.setRiskLevel(risk);
         tx.setStatus(status);
 
-        // 11. Atomic Balance Update: Only if the status is SUCCESS
+        // 11.Balance Update-Only if the status is SUCCESS
         if (status.equals("SUCCESS")) {
             senderKyc.setBalance(senderKyc.getBalance() - amount);
             recipientKyc.setBalance(recipientKyc.getBalance() + amount);
-
-            // Save the updated balances to the customer_onboarding table
             onboardingRepository.save(senderKyc);
             onboardingRepository.save(recipientKyc);
         }
@@ -130,7 +135,6 @@ public class TransactionService {
         Transaction tx = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        // Only process balance if moving from PENDING to COMPLETED/SUCCESS
         if (status.equalsIgnoreCase("COMPLETED") && !tx.getStatus().equals("SUCCESS")) {
             CustomerOnboarding senderKyc = onboardingRepository.findByEmail(tx.getSender().getEmail())
                     .orElseThrow(() -> new RuntimeException("Sender KYC missing"));
@@ -158,13 +162,10 @@ public class TransactionService {
     }
 
     public TransactionSummary getTransactionSummary() {
-        // 1. Fetch all records from the database
         List<Transaction> all = transactionRepository.findAll();
 
-        // 2. Calculate the total count of transactions
         long totalToday = all.size();
 
-        // 3. Filter for PENDING transactions
         long pending = all.stream()
                 .filter(t -> "PENDING".equalsIgnoreCase(t.getStatus()))
                 .count();

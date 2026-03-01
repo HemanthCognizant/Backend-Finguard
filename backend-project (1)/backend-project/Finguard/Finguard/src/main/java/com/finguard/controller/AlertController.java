@@ -13,7 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200") // Adjust based on your frontend port
+@CrossOrigin(origins = "http://localhost:4200")
 public class AlertController {
 
     private final AlertRepository alertRepo;
