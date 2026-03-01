@@ -7,6 +7,7 @@ import com.finguard.repository.AuditRepository;
 import com.finguard.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 @Service
 public class UserService {
@@ -15,13 +16,14 @@ public class UserService {
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder encoder;
 
-    public UserService(UserRepository repo, AlertRepository alertRepo, AuditRepository auditRepo, HttpServletRequest request) {
+    public UserService(UserRepository repo, AlertRepository alertRepo, AuditRepository auditRepo, HttpServletRequest request, PasswordEncoder encoder) {
         this.repo = repo;
         this.alertRepo = alertRepo;
         this.auditRepo=auditRepo;
         this.request=request;
+        this.encoder=encoder;
     }
     public User register(User user) {
         user.setPassword(encoder.encode(user.getPassword()));

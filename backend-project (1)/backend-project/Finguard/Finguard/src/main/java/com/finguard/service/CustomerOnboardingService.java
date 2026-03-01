@@ -10,7 +10,6 @@ import com.finguard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,8 +23,6 @@ public class CustomerOnboardingService {
 
     private final UserRepository userRepository;
     private final CustomerOnboardingRepository repository;
-
-    private final JavaMailSender mailSender;
     private final AuditRepository auditRepo;
     private final HttpServletRequest request;
 

@@ -52,7 +52,10 @@ public class TransactionService {
 
         // 5. Security Check: Verify banking password
         if (!passwordEncoder.matches(password, sender.getPassword())) {
-            throw new RuntimeException("Invalid banking password. Please try again.");
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED,
+                    "Invalid banking password. Please try again."
+            );
         }
 
         // 6. Logical Validations
