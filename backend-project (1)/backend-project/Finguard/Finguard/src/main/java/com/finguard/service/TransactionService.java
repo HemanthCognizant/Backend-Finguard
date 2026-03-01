@@ -37,11 +37,11 @@ public class TransactionService {
         CustomerOnboarding senderKyc = onboardingRepository.findByEmail(sender.getEmail())
                 .orElseThrow(() -> new RuntimeException("Sender KYC record not found"));
 
-        // 2. Fetch Recipient by Application ID (from customer_onboarding table)
+        // 2. Fetch Recipient by Application ID from customer_onboarding table
         CustomerOnboarding recipientKyc = onboardingRepository.findById(recipientAppId)
                 .orElseThrow(() -> new RuntimeException("Recipient Application ID not found: " + recipientAppId));
 
-        // 3. Bridge Recipient KYC to User Table via Email to maintain Transaction Relationship
+        // 3. Foreign key constrain of email
         User recipient = userRepository.findByEmail(recipientKyc.getEmail())
                 .orElseThrow(() -> new RuntimeException("Recipient user account is not active or registered"));
 
@@ -73,7 +73,7 @@ public class TransactionService {
             throw new RuntimeException("Transaction amount must be greater than zero");
         }
 
-        // 7. Balance Check (using the Onboarding table balance)
+        // 7. Balance Check
         if (senderKyc.getBalance() < amount) {
             throw new RuntimeException("Insufficient balance in your account");
         }
@@ -89,7 +89,7 @@ public class TransactionService {
             alertRepo.save(alert);
         }
 
-        // 9. Status Logic: HIGH risk requires Banker approval (PENDING)
+        // 9. HIGH risk need banker approval
         String status = risk.equals("HIGH") ? "PENDING" : "SUCCESS";
 
         // 10. Create Transaction Record

@@ -36,7 +36,6 @@ public class CustomerOnboardingService {
 
         CustomerOnboarding saved = repository.save(customer);
 
-        // Summary: Real IP extraction and audit log for KYC creation
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
@@ -56,7 +55,6 @@ public class CustomerOnboardingService {
         customer.setStatus(status);
         CustomerOnboarding updated = repository.save(customer);
 
-        // Summary: Only generate log if status is APPROVED; captures real IP
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
@@ -64,7 +62,6 @@ public class CustomerOnboardingService {
         if ("APPROVED".equalsIgnoreCase(status)) {
             auditRepo.save(new AuditLog("Admin", "ADMIN", "KYC Approved", "KYC Verification", "Approved KYC for: " + updated.getFullName(), ip));
         }
-
         return updated;
     }
 

@@ -9,33 +9,24 @@ import java.time.LocalDateTime;
 @Table(name = "transactions")
 @Data
 public class Transaction {
-
     @Id
     @Column(name = "tx_id")
     private String id;
-
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private User sender;
-
     @ManyToOne
     @JoinColumn(name = "recipient_id")
     private User recipient;
-
     private Double amount;
-
     private String channel;
-
     private String riskLevel;
-
     private String status;
     private String recipientAppId;
-
     private LocalDateTime createdAt = LocalDateTime.now();
-
     @PrePersist
     public void generateId() {
-        int randomNum = (int) (Math.random() * 9000) + 1000; // Generates 4 digits (1000-9999)
+        int randomNum = (int) (Math.random() * 9000) + 1000;
         this.id = "TX-" + randomNum;
     }
 

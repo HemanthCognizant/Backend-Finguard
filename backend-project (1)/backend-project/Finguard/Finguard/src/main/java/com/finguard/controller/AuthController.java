@@ -26,8 +26,7 @@ public class AuthController {
                 .password(request.getPassword())
                 .role(request.getRole())
                 .build();
-        service.register(user); // ✅ correct
-
+        service.register(user);
         return ResponseEntity.ok(
                 Map.of("message", "Signup successful")
         );

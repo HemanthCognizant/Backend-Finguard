@@ -37,8 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String roleFromToken = claims.get("role", String.class);
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null && roleFromToken != null) {
-
-                    // Standardize the role: UPPERCASE and add ROLE_ prefix
                     String formattedRole = roleFromToken.toUpperCase();
                     if (!formattedRole.startsWith("ROLE_")) {
                         formattedRole = "ROLE_" + formattedRole;
