@@ -6,6 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
@@ -129,6 +133,7 @@ public class TransactionService {
         Transaction tx = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
+
         if (status.equalsIgnoreCase("COMPLETED") && !tx.getStatus().equals("SUCCESS")) {
             CustomerOnboarding senderKyc = onboardingRepository.findByEmail(tx.getSender().getEmail())
                     .orElseThrow(() -> new RuntimeException("Sender KYC missing"));
@@ -153,6 +158,12 @@ public class TransactionService {
         }
 
         transactionRepository.save(tx);
+
+    }
+    public Page<AuditLog> getAuditLogs(int page) {
+        // We define the page number, the size (10), and the sorting order
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("timestamp").descending());
+        return auditRepo.findAll(pageable);
     }
 
     public TransactionSummary getTransactionSummary() {
