@@ -17,7 +17,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 public class CustomerOnboardingController {
 
-    private final CustomerOnboardingService service;
+    private final CustomerOnboardingService customerOnboardingService;
 
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<CustomerOnboarding> create(
@@ -28,13 +28,13 @@ public class CustomerOnboardingController {
             @RequestPart("photo") MultipartFile photo,
             HttpServletRequest request) throws Exception {
 
-        CustomerOnboarding saved = service.create(customer, aadhaarFront, aadhaarBack, panCard, photo, request);
+        CustomerOnboarding saved = customerOnboardingService.create(customer, aadhaarFront, aadhaarBack, panCard, photo, request);
         return ResponseEntity.ok(saved);
     }
 
     @GetMapping
     public List<CustomerOnboarding> getAll() {
-        return service.getAll();
+        return customerOnboardingService.getAll();
     }
 
     @PutMapping("/{applicationId}/status")
@@ -42,12 +42,12 @@ public class CustomerOnboardingController {
             @PathVariable String applicationId,
             @RequestParam String status,
             HttpServletRequest request) {
-        service.updateStatus(applicationId, status, request);
+        customerOnboardingService.updateStatus(applicationId, status, request);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profile/{userId}")
     public ResponseEntity<CustomerOnboarding> getProfile(@PathVariable Long userId) {
-        return ResponseEntity.ok(service.findByUserId(userId));
+        return ResponseEntity.ok(customerOnboardingService.findByUserId(userId));
     }
 }

@@ -4,6 +4,7 @@ import com.finguard.entity.*;
 import com.finguard.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -18,10 +19,10 @@ import java.util.List;
 public class TransactionService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
-    private final CustomerOnboardingRepository onboardingRepository;
+    private final CustomerOnboardingRepository customerOnboardingRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AlertRepository alertRepo;
-    private final AuditRepository auditRepo;
+    private final AlertRepository alertRepository;
+    private final AuditRepository auditRepository;
     private final HttpServletRequest request;
     @Transactional
     public Transaction sendTransaction(Long senderId,
@@ -32,11 +33,11 @@ public class TransactionService {
         // 1. Fetch Sender User and their KYC details
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
-        CustomerOnboarding senderKyc = onboardingRepository.findByEmail(sender.getEmail())
+        CustomerOnboarding senderKyc = customerOnboardingRepository.findByEmail(sender.getEmail())
                 .orElseThrow(() -> new RuntimeException("Sender KYC record not found"));
 
         // 2. Fetch Recipient by Application ID from customer_onboarding table
-        CustomerOnboarding recipientKyc = onboardingRepository.findById(recipientAppId)
+        CustomerOnboarding recipientKyc = customerOnboardingRepository.findById(recipientAppId)
                 .orElseThrow(() -> new RuntimeException("Recipient Application ID not found: " + recipientAppId));
 
         // 3. Foreign key constrain of email
@@ -57,10 +58,8 @@ public class TransactionService {
 
         // 5. Security Check: Verify banking password
         if (!passwordEncoder.matches(password, sender.getPassword())) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.UNAUTHORIZED,
-                    "Invalid banking password. Please try again."
-            );
+            throw new RuntimeException(
+                    "Invalid banking password. Please try again.");
         }
 
         // 6. Logical Validations
@@ -70,7 +69,6 @@ public class TransactionService {
         if (amount <= 0) {
             throw new RuntimeException("Transaction amount must be greater than zero");
         }
-
         // 7. Balance Check
         if (senderKyc.getBalance() < amount) {
             throw new RuntimeException("Insufficient balance in your account");
@@ -84,12 +82,10 @@ public class TransactionService {
             alert.setType("Unusual Transaction Pattern");
             alert.setCustomer(sender.getName());
             alert.setSeverity("HIGH");
-            alertRepo.save(alert);
+            alertRepository.save(alert);
         }
-
         // 9. HIGH risk need banker approval
         String status = risk.equals("HIGH") ? "PENDING" : "SUCCESS";
-
         // 10. Create Transaction Record
         Transaction tx = new Transaction();
         tx.setSender(sender);
@@ -104,8 +100,8 @@ public class TransactionService {
         if (status.equals("SUCCESS")) {
             senderKyc.setBalance(senderKyc.getBalance() - amount);
             recipientKyc.setBalance(recipientKyc.getBalance() + amount);
-            onboardingRepository.save(senderKyc);
-            onboardingRepository.save(recipientKyc);
+            customerOnboardingRepository.save(senderKyc);
+            customerOnboardingRepository.save(recipientKyc);
         }
 
         return transactionRepository.save(tx);
@@ -119,7 +115,7 @@ public class TransactionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return onboardingRepository.findByEmail(user.getEmail())
+        return customerOnboardingRepository.findByEmail(user.getEmail())
                 .map(CustomerOnboarding::getBalance)
                 .orElseThrow(() -> new RuntimeException("KYC record not found for this user"));
     }
@@ -135,24 +131,28 @@ public class TransactionService {
 
 
         if (status.equalsIgnoreCase("COMPLETED") && !tx.getStatus().equals("SUCCESS")) {
-            CustomerOnboarding senderKyc = onboardingRepository.findByEmail(tx.getSender().getEmail())
+            CustomerOnboarding senderKyc = customerOnboardingRepository.findByEmail(tx.getSender().getEmail())
                     .orElseThrow(() -> new RuntimeException("Sender KYC missing"));
-            CustomerOnboarding recipientKyc = onboardingRepository.findByEmail(tx.getRecipient().getEmail())
+            CustomerOnboarding recipientKyc = customerOnboardingRepository.findByEmail(tx.getRecipient().getEmail())
                     .orElseThrow(() -> new RuntimeException("Recipient KYC missing"));
 
             senderKyc.setBalance(senderKyc.getBalance() - tx.getAmount());
             recipientKyc.setBalance(recipientKyc.getBalance() + tx.getAmount());
 
-            onboardingRepository.save(senderKyc);
-            onboardingRepository.save(recipientKyc);
+            customerOnboardingRepository.save(senderKyc);
+            customerOnboardingRepository.save(recipientKyc);
             tx.setStatus("SUCCESS");
 
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
             }
-            auditRepo.save(new AuditLog("Admin", "ADMIN", "Approved Transaction", "Risk Management",
-                    "Approved High Risk TX: " + tx.getId(), ip));
+            auditRepository.save(new AuditLog(SecurityContextHolder.getContext().getAuthentication().getName(),
+                    Role.ADMIN.name(),
+                    "Approved Transaction",
+                    "Risk Management",
+                    "Approved High Risk TX: " + tx.getId(),
+                    ip));
         } else {
             tx.setStatus(status.toUpperCase());
         }
@@ -161,9 +161,8 @@ public class TransactionService {
 
     }
     public Page<AuditLog> getAuditLogs(int page) {
-        // We define the page number, the size (10), and the sorting order
         Pageable pageable = PageRequest.of(page, 10, Sort.by("timestamp").descending());
-        return auditRepo.findAll(pageable);
+        return auditRepository.findAll(pageable);
     }
 
     public TransactionSummary getTransactionSummary() {

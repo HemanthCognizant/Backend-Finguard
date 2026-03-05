@@ -9,10 +9,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final UserService service;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
     public AuthController(UserService service, JwtUtil jwtUtil) {
-        this.service = service;
+        this.userService = service;
         this.jwtUtil = jwtUtil;
     }
 
@@ -24,7 +24,7 @@ public class AuthController {
                 .password(request.getPassword())
                 .role(request.getRole())
                 .build();
-        service.register(user);
+        userService.register(user);
         return ResponseEntity.ok(
                 Map.of("message", "Signup successful")
         );
@@ -32,7 +32,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest req) {
-        User user = service.authenticate(req.getEmail(), req.getPassword());
+        User user = userService.authenticate(req.getEmail(), req.getPassword());
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(),user.getId(),user.getName());
         return new LoginResponse(token);
 

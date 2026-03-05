@@ -12,11 +12,11 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 public class AlertController {
 
-    private final AlertRepository alertRepo;
+    private final AlertRepository alertRepository;
 
     @GetMapping
     public ResponseEntity<List<Alert>> getAllAlerts() {
-        return ResponseEntity.ok(alertRepo.findAll());
+        return ResponseEntity.ok(alertRepository.findAll());
     }
 
 }

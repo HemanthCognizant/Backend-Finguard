@@ -15,23 +15,23 @@ import java.util.List;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
 public class AnalyticsController {
-    private final TransactionRepository txRepo;
-    private final AlertRepository alertRepo;
-    private final CustomerOnboardingRepository onboardingRepo;
+    private final TransactionRepository transactionRepository;
+    private final AlertRepository alertRepository;
+    private final CustomerOnboardingRepository customerOnboardingRepository;
 
     @GetMapping("/risk-distribution")
-    public List<ChartData> getRisk() { return txRepo.getRiskDistribution(); }
+    public List<ChartData> getRisk() { return transactionRepository.getRiskDistribution(); }
 
     @GetMapping("/status-breakdown")
-    public List<ChartData> getStatus() { return txRepo.getStatusBreakdown(); }
+    public List<ChartData> getStatus() { return transactionRepository.getStatusBreakdown(); }
 
     @GetMapping("/alert-severity")
-    public List<ChartData> getAlerts() { return alertRepo.getAlertSeverityCount(); }
+    public List<ChartData> getAlerts() { return alertRepository.getAlertSeverityCount(); }
 
     @GetMapping("/channel-volume")
-    public List<ChartData> getChannels() { return txRepo.getVolumeByChannel(); }
+    public List<ChartData> getChannels() { return transactionRepository.getVolumeByChannel(); }
 
     @GetMapping("/onboarding-funnel")
-    public List<ChartData> getFunnel() { return onboardingRepo.getOnboardingStatus(); }
+    public List<ChartData> getFunnel() { return customerOnboardingRepository.getOnboardingStatus(); }
 
 }

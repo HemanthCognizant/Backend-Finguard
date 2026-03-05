@@ -14,7 +14,6 @@ import java.util.List;
 @CrossOrigin
 public class TransactionController {
     private final TransactionService transactionService;
-    private final CustomerOnboardingService service;
     @PostMapping
     public ResponseEntity<?> send(@RequestBody TransactionRequest request) {
         System.out.println("Id received: "+request.getRecipientId());

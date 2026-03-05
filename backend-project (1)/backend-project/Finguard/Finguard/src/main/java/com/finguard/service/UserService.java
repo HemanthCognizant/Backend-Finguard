@@ -6,35 +6,29 @@ import com.finguard.repository.AlertRepository;
 import com.finguard.repository.AuditRepository;
 import com.finguard.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserRepository repo;
-    private final AlertRepository alertRepo;
-    private final AuditRepository auditRepo;
+    private final UserRepository userRepository;
+    private final AlertRepository alertRepository;
+    private final AuditRepository auditRepository;
     private final HttpServletRequest request;
     private final PasswordEncoder encoder;
 
-    public UserService(UserRepository repo, AlertRepository alertRepo, AuditRepository auditRepo, HttpServletRequest request, PasswordEncoder encoder) {
-        this.repo = repo;
-        this.alertRepo = alertRepo;
-        this.auditRepo=auditRepo;
-        this.request=request;
-        this.encoder=encoder;
-    }
     public User register(User user) {
         user.setPassword(encoder.encode(user.getPassword()));
-        return repo.save(user);
+        return userRepository.save(user);
     }
         public User authenticate(String email, String password) {
-            User user = repo.findByEmail(email)
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty()) {
                 ip = request.getRemoteAddr();
             }
-            String userRole = user.getRole().toString();
 
             if (!encoder.matches(password, user.getPassword())) {
                 user.setFailedAttempts(user.getFailedAttempts() + 1);
@@ -43,16 +37,26 @@ public class UserService {
                     alert.setType("Suspicious Login Activity");
                     alert.setCustomer(user.getName());
                     alert.setSeverity("MEDIUM");
-                    alertRepo.save(alert);
-                    auditRepo.save(new AuditLog(user.getName(), userRole, "Suspicious Login", "Authentication", "Failed login limit reached", ip));
+                    alertRepository.save(alert);
+                    auditRepository.save(new AuditLog(user.getEmail(),
+                            user.getRole().toString(),
+                            "Suspicious Login",
+                            "Authentication",
+                            "Failed login limit reached",
+                            ip));
                 }
-                repo.save(user);
+                userRepository.save(user);
                 throw new RuntimeException("Invalid credentials");
             }
 
             user.setFailedAttempts(0);
-            repo.save(user);
-            auditRepo.save(new AuditLog(user.getName(), userRole, "Login", "Authentication", "Successful login", ip));
+            userRepository.save(user);
+            auditRepository.save(new AuditLog(user.getEmail(),
+                    user.getRole().toString(),
+                    "Login",
+                    "Authentication",
+                    "Successful login",
+                    ip));
             return user;
         }
 }

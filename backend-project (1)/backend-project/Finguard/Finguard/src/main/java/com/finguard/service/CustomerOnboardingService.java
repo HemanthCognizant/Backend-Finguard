@@ -2,6 +2,7 @@ package com.finguard.service;
 
 import com.finguard.entity.AuditLog;
 import com.finguard.entity.CustomerOnboarding;
+import com.finguard.entity.Role;
 import com.finguard.entity.User;
 import com.finguard.repository.AuditRepository;
 import com.finguard.repository.CustomerOnboardingRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,14 +27,15 @@ import java.util.UUID;
 public class CustomerOnboardingService {
 
     private final UserRepository userRepository;
-    private final CustomerOnboardingRepository repository;
-    private final AuditRepository auditRepo;
+    private final CustomerOnboardingRepository customerOnboardingRepository;
+    private final AuditRepository auditRepository;
 
     @Value("${file.upload-dir:./uploads/documents}")
     private String uploadDir;
 
+    // () -> to create new onboarding record
     public CustomerOnboarding create(CustomerOnboarding customer,
-                                     MultipartFile aadhaarFront,
+                                     MultipartFile aadhaarFront, // MutlipartFile -> interface that provides essential methods for handling the uploaded data.
                                      MultipartFile aadhaarBack,
                                      MultipartFile panCard,
                                      MultipartFile photo,
@@ -49,14 +52,20 @@ public class CustomerOnboardingService {
         customer.setStatus("PENDING");
         customer.setCreatedAt(LocalDateTime.now());
 
-        CustomerOnboarding saved = repository.save(customer);
+        CustomerOnboarding saved = customerOnboardingRepository.save(customer);
 
         // 3. Audit Logging
-        String ip = request.getHeader("X-Forwarded-For");
+        String ip = request.getHeader("X-Forwarded-For"); // XFF is used to retrieve the ip from header
         if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
+            ip = request.getRemoteAddr(); // we may get proxy server ip, not the real ip
         }
-        auditRepo.save(new AuditLog("Banker Name", "BANKER", "Customer Onboarding", "KYC", "Onboarded: " + saved.getFullName(), ip));
+        auditRepository.save(new AuditLog(
+                SecurityContextHolder.getContext().getAuthentication().getName(),
+                Role.BANKER.name(),
+                "Customer Onboarding",
+                "KYC",
+                "Onboarded: " + saved.getFullName(),
+                ip));
 
         return saved;
     }
@@ -77,21 +86,27 @@ public class CustomerOnboardingService {
     }
 
     public List<CustomerOnboarding> getAll() {
-        return repository.findAll();
+        return customerOnboardingRepository.findAll();
     }
 
     public CustomerOnboarding updateStatus(String applicationId, String status, HttpServletRequest request) {
-        CustomerOnboarding customer = repository.findById(applicationId)
+        CustomerOnboarding customer = customerOnboardingRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found: " + applicationId));
         customer.setStatus(status);
-        CustomerOnboarding updated = repository.save(customer);
+        CustomerOnboarding updated = customerOnboardingRepository.save(customer);
 
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
         }
         if ("APPROVED".equalsIgnoreCase(status)) {
-            auditRepo.save(new AuditLog("Admin", "ADMIN", "KYC Approved", "KYC Verification", "Approved KYC for: " + updated.getFullName(), ip));
+            auditRepository.save(new AuditLog(
+                    SecurityContextHolder.getContext().getAuthentication().getName(),
+                    Role.ADMIN.name(),
+                    "KYC Approved",
+                    "KYC Verification",
+                    "Approved KYC for: " + updated.getFullName(),
+                    ip));
         }
 
         return updated;
@@ -101,7 +116,7 @@ public class CustomerOnboardingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        CustomerOnboarding profile = repository.findByEmail(user.getEmail()).orElse(null);
+        CustomerOnboarding profile = customerOnboardingRepository.findByEmail(user.getEmail()).orElse(null);
 
         if (profile == null) {
             CustomerOnboarding fallback = new CustomerOnboarding();
