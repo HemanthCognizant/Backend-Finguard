@@ -16,7 +16,7 @@ public class AuditLogController {
 
     private final AuditRepository auditRepository;
     @GetMapping
-    public Page<AuditLog> getAllLogs(@RequestParam(defaultValue = "0") int page) {
-        return auditRepository.findAllByOrderByTimestampDesc(PageRequest.of(page, 10));
+    public Page<AuditLog> getAllLogs(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return auditRepository.findAllByOrderByTimestampDesc(PageRequest.of(page, size));
     }
 }

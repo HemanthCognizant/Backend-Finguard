@@ -20,18 +20,28 @@ public class AnalyticsController {
     private final CustomerOnboardingRepository customerOnboardingRepository;
 
     @GetMapping("/risk-distribution")
-    public List<ChartData> getRisk() { return transactionRepository.getRiskDistribution(); }
+    public List<ChartData> getRisk() {
+        return transactionRepository.getRiskDistribution();
+    }
 
     @GetMapping("/status-breakdown")
-    public List<ChartData> getStatus() { return transactionRepository.getStatusBreakdown(); }
+    public List<ChartData> getStatus() {
+        return transactionRepository.getStatusBreakdown();
+    }
 
     @GetMapping("/alert-severity")
-    public List<ChartData> getAlerts() { return alertRepository.getAlertSeverityCount(); }
+    public List<ChartData> getAlerts() {
+        return alertRepository.getAlertSeverityCount();
+    }
 
     @GetMapping("/channel-volume")
-    public List<ChartData> getChannels() { return transactionRepository.getVolumeByChannel(); }
+    public List<ChartData> getChannels() {
+        return transactionRepository.getVolumeByChannel();
+    }
 
     @GetMapping("/onboarding-funnel")
-    public List<ChartData> getFunnel() { return customerOnboardingRepository.getOnboardingStatus(); }
+    public List<ChartData> getFunnel() {
+        return customerOnboardingRepository.getOnboardingStatus();
+    }
 
 }
